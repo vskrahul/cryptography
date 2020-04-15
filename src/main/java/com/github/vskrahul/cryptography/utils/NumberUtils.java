@@ -1,12 +1,13 @@
 package com.github.vskrahul.cryptography.utils;
 
-import static java.lang.Long.parseLong;
+import static java.lang.Long.*;
 import static java.lang.Long.toBinaryString;
 
 public class NumberUtils {
 
 	public static String XOR(String a, String b) {
-		return toBinaryString(parseLong(a, 2) ^ parseLong(b, 2));
+		String xor = toBinaryString(parseUnsignedLong(a, 2) ^ parseUnsignedLong(b, 2));
+		return addZeroes(xor, a.length() - xor.length());
 	}
 	
 	public static String asciiTextToBinaryString(String asciiText) {
@@ -18,14 +19,23 @@ public class NumberUtils {
 		return sb.toString();
 	}
 	
-	public static String decimalToBinary(int decimal) {
-		return leadingZeroes((byte)decimal) + Integer.toBinaryString(decimal);
+	public static String decimalToXbits(int decimal, int x) {
+		if(decimal > Math.pow(2, x) - 1)
+			throw new RuntimeException(String.format("%d can not be fit in %d bits", decimal, x));
+		String bits = Integer.toBinaryString(decimal);
+		return addZeroes(bits, x - bits.length());
+	}
+	
+	private static String addZeroes(String s, int z) {
+		for(int i = 0; i < z; i++)
+			s = "0" + s;
+		return s;
 	}
 	
 	private static String leadingZeroes(byte b) {
 		byte i = (byte) numberOfLeadingZeros(b);
 		String s = "";
-		for (byte x = 0; x < i; i++) {
+		for (byte x = 0; x < i; x++) {
 			s += "0";
 		}
 		return s;
