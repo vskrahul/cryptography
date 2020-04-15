@@ -95,23 +95,64 @@ public class DES {
 		String right = input.substring(32);
 		String temp;
 		
-		System.out.println(String.format("Input : %s %s", left, right));
+		//System.out.println(String.format("Input : %s %s", left, right));
 		
 		for(int i = 0; i < 16; i++) {
 			String f = f(right, keySchedules[i]);
 			temp = right;
 			right = XOR(left, f);
 			left = temp;
-			System.out.println(String.format("Round %d : %s %s", i + 1, left, right));
+			//System.out.println(String.format("Round %d : %s %s", i + 1, left, right));
 		}
 		return right + left;
 	}
 	
-	public String encrypt64Bit(String input, String[] keySchedules) {
-		System.out.println("Plain Text : " + input);
+	public String reverseRound(String input, String[] keySchedules) {
+		
+		String left = input.substring(0, 32);
+		String right = input.substring(32);
+		String temp;
+		
+		//System.out.println(String.format("Input : %s %s", left, right));
+		
+		for(int i = 15; i >= 0; i--) {
+			String f = f(right, keySchedules[i]);
+			temp = right;
+			right = XOR(left, f);
+			left = temp;
+			//System.out.println(String.format("Round %d : %s %s", i + 1, left, right));
+		}
+		return right + left;
+	}
+	
+	public String decrypt64Bit(String input, String[] keySchedules) {
 		//Initial Permutation
 		String IP = permutation(INITIAL_PERMUATIONS, input);
-		System.out.println("Initial Permutation : " + IP);
+		String cipher = reverseRound(IP, keySchedules);
+		
+		//Inverse Permutation
+		String IP_1 = permutation(FINAL_PERMUTATION, cipher);
+		return IP_1;
+	}
+	
+	public String decrypt(String cipher, String privateKey) {
+		
+		StringBuilder plainText = new StringBuilder();
+		String[] keySchedules = keySchedule(asciiTextToBinaryString(privateKey));
+		
+		for(int i = 0; i < cipher.length()/64; i++) {
+			int start = i*64;
+			int end = 64*(i+1) > cipher.length() ? cipher.length() : 64*(i+1);
+			String m = cipher.substring(start, end);
+			String dec = decrypt64Bit(m, keySchedules);
+			plainText.append(dec);
+		}
+		return plainText.toString();
+	}
+	
+	public String encrypt64Bit(String input, String[] keySchedules) {
+		//Initial Permutation
+		String IP = permutation(INITIAL_PERMUATIONS, input);
 		String cipher = round(IP, keySchedules);
 		
 		//Inverse Permutation
@@ -129,7 +170,12 @@ public class DES {
 								: message.length()/8 + 1;
 		
 		for(int i = 0; i < size; i++) {
-			cipher.append(encrypt64Bit(asciiTextToBinaryString(message.substring(i, 8)), keySchedules));
+			int start = i*8;
+			int end = 8*(i+1) > message.length() ? message.length() : 8*(i+1);
+			String m = message.substring(start, end);
+			String enc = encrypt64Bit(asciiTextToBinaryString(m), keySchedules);
+			System.out.println(String.format("%s-%s", m, enc));
+			cipher.append(enc);
 		}
 		return cipher.toString();
 	}

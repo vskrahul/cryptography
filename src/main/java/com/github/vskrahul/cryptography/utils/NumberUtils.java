@@ -11,6 +11,7 @@ public class NumberUtils {
 	}
 	
 	public static String asciiTextToBinaryString(String asciiText) {
+		asciiText = addSpace(asciiText);
 		byte[] bytes = asciiText.getBytes();
 		StringBuilder sb = new StringBuilder();
 		for(byte b : bytes) {
@@ -32,6 +33,14 @@ public class NumberUtils {
 		return s;
 	}
 	
+	private static String addSpace(String s) {
+		int whiteSpaces = 8 - s.length()%8;
+		for(int i = 0; i < whiteSpaces; i++) {
+			s = s + " ";
+		}
+		return s;
+	}
+	
 	private static String leadingZeroes(byte b) {
 		byte i = (byte) numberOfLeadingZeros(b);
 		String s = "";
@@ -50,5 +59,14 @@ public class NumberUtils {
 		if(i >>> 6 == 0) return 2;
 		if(i >>> 7 == 0) return 1;
 		return 1;
+	}
+	
+	public static byte[] bitsToBytes(String s) {
+		byte[] bytes = new byte[s.length()/8];
+		for(int i = 0; i < s.length()/8; i++) {
+			bytes[i] = (byte)Integer.parseInt(s.substring(i*8, (i+1)*8), 2);
+		}
+		
+		return bytes;
 	}
 }
